@@ -1,73 +1,105 @@
+import { db } from '@/firebase/config'
 import { Button, Divider, Form, Input, Modal, Tooltip } from 'antd'
-import { DocumentData } from 'firebase/firestore'
+import { DocumentData, Query, Timestamp, collection, doc, limit, orderBy, query, setDoc, where } from 'firebase/firestore'
 import _ from "lodash"
+import { useEffect, useState } from 'react'
 import { AiOutlineSearch, AiOutlineUsergroupAdd } from 'react-icons/ai'
-import { BiMessageSquareDetail } from 'react-icons/bi'
+import { useSelector } from 'react-redux'
 import Scrollbar from 'react-scrollbars-custom'
 import { useSessionStorage } from 'react-use'
-import { useFirestoreOnSnapshot } from '../hooks/useFirestoreOnSnapshot'
-import RoomComponent from './RoomComponent'
-import { useState } from 'react'
+import styled from "styled-components"
+import { v4 as uuidv4 } from 'uuid'
 import { CHATBOXCONSTANT } from "../CONTANT"
-import { useForm } from 'antd/es/form/Form'
+import { useFirestoreOnSnapshot } from '../hooks/useFirestoreOnSnapshot'
+import { RootState } from '../redux/store'
+import RoomComponent from './RoomComponent'
 
+const RoomsWrapper = styled.div`
+    padding: 40px 10px 10px 10px
+`
 
-const RoomsComponent = () => {
+interface IRoomsComponentProps {
+}
+
+const RoomsComponent = (props: IRoomsComponentProps) => {
     const [id, setid] = useSessionStorage('id', '');
     const [visibleModalAddRoom, setVisibleModalAddRoom] = useState(false as boolean)
     const [loadingModal, setLoadingModal] = useState(false as boolean)
     const [form] = Form.useForm();
+    const { displayName } = useSelector((state: RootState) => state.userReducer)
 
-    const { document } = useFirestoreOnSnapshot({
-        collectionName: "rooms",
-        condition: {
-            fieldName: "members",
-            operator: "array-contains",
-            compareValue: id
-        }
+    const roomsDataOnSnapShot: any = useFirestoreOnSnapshot({
+        query: query(collection(db, "rooms"),
+            where("members", "array-contains", id),
+            orderBy("createAt", "desc"),
+            limit(10)) as Query<DocumentData>,
     })
+
+    useEffect(() => {
+        if (!visibleModalAddRoom) {
+            setLoadingModal(false)
+            form.resetFields()
+        }
+    }, [visibleModalAddRoom])
+
+    const onSetData = async (roomName: string, avatar: string) => {
+        const roomId = uuidv4()
+        setLoadingModal(true)
+        const docDataRoom = {
+            roomId: roomId,
+            avatar: avatar,
+            createAt: Timestamp.now(),
+            createBy: displayName,
+            name: roomName,
+            members: [id]
+        }
+        const docDataMessage = {
+            roomId: roomId,
+            messages: [],
+            createAt: Timestamp.now(),
+        }
+        let docDataLastMessage: any = {
+            createAt: Timestamp.now(),
+        }
+        docDataLastMessage[roomId] = ""
+        await setDoc(doc(db, "rooms", roomName), docDataRoom);
+        await setDoc(doc(db, "messages", roomId), docDataMessage)
+        await setDoc(doc(db, "lastMessages", "LASTMESSAGES"), docDataLastMessage)
+        setLoadingModal(false)
+        setVisibleModalAddRoom(false)
+    }
 
     const onAddNewRoom = () => {
         form.validateFields()
             .then((values: any) => {
-                console.log(values);
+                const { roomName, avatar } = values
+                onSetData(roomName, avatar)
             })
             .catch((err: any) => {
                 return
             })
     }
 
-    return <>
-        <div className={`p-5 flex justify-between items-center h-24 border-b-2`}>
-            <h4 className={`text-[${CHATBOXCONSTANT.colors.primaryColorBlue}] font-bold text-2xl`}>
-                Messages
-            </h4>
-        </div>
 
-        <div className=' p-5'>
+    return <RoomsWrapper>
+        <div>
 
-            <div className='flex items-center justify-between'>
-                <Input style={{ maxWidth: "90%" }} prefix={<AiOutlineSearch />} placeholder='Search...' />
-                <span onClick={() => {
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+                <Input prefix={<AiOutlineSearch />} placeholder='Search...' />
+                <span style={{ fontSize: 20 }} onClick={() => {
                     setVisibleModalAddRoom(true)
-                }} className=' text-[24px] cursor-pointer'>
+                }}>
                     <Tooltip title="Add new room">
                         <AiOutlineUsergroupAdd />
                     </Tooltip>
                 </span>
             </div>
 
-            <Divider className=' m-2 border-none' />
+            <Divider />
 
-            <span className='flex items-center text-[12px] text-[#a7a5a5] font-medium'>
-                <BiMessageSquareDetail />
-                <Divider type='vertical' className=' border-none mr-0 ' />
-                All Rooms
-            </span>
-
-            <Scrollbar style={{ height: "530px", overflow: "hidden" }}>
+            <Scrollbar style={{ height: "calc(100vh - 150px)", overflow: "hidden", marginTop: 10 }}>
                 {
-                    document && !_.isEmpty(document) && document.map((room: DocumentData) => {
+                    roomsDataOnSnapShot && !_.isEmpty(roomsDataOnSnapShot) && roomsDataOnSnapShot.map((room: DocumentData) => {
                         return <RoomComponent
                             room={room}
                         />
@@ -78,6 +110,9 @@ const RoomsComponent = () => {
 
         </div>
         <Modal
+            onCancel={() => {
+                setVisibleModalAddRoom(false)
+            }}
             style={{ maxWidth: 350 }}
             footer={[
                 <Button key="back" onClick={() => setVisibleModalAddRoom(false)}>
@@ -106,18 +141,32 @@ const RoomsComponent = () => {
                     <Input placeholder="Name" />
                 </Form.Item>
                 <Form.Item
-                    name={"photoURL"}
+                    name={"avatar"}
                     rules={[{
                         required: true,
                         message: "Required"
+                    }, {
+                        validator: (rule, value, callback) => {
+                            var img = new Image();
+                            img.src = value;
+                            img.onload = function () {
+                                callback();
+                            };
+                            img.onerror = function () {
+                                callback("Invalid Image URL")
+                            };
+                        }
                     }]}
                     label='Avatar'
+
                 >
                     <Input placeholder="URL" />
                 </Form.Item>
             </Form>
         </Modal>
-    </>
+    </RoomsWrapper >
 }
 
 export default RoomsComponent
+
+

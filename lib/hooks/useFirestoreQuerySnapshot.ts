@@ -1,5 +1,5 @@
 import { db } from "@/firebase/config"
-import { DocumentData, QueryDocumentSnapshot, WhereFilterOp, collection, getDocs, query, where } from "firebase/firestore"
+import { DocumentData, WhereFilterOp, collection, getDocs, query, where } from "firebase/firestore"
 import { useEffect, useState } from "react"
 
 interface IUseFirestoreProps {
@@ -13,14 +13,14 @@ interface IUseFirestoreProps {
 
 export const useFirestoreQuerySnapshot = (props: IUseFirestoreProps) => {
     const { collectionName, condition } = props
-    const [document, setDocument] = useState({} as DocumentData)
+    const [documentQuerySnapShot, setDocumentQuerySnapShot] = useState({} as DocumentData)
 
     const load = async () => {
         const q = query(collection(db, collectionName), where(condition.fieldName, condition.operator, condition.compareValue));
         const querySnapshot = await getDocs(q);
         querySnapshot.forEach((doc) => {
             if (doc.id) {
-                setDocument(doc.data())
+                setDocumentQuerySnapShot(doc.data())
             }
         });
     }
@@ -31,5 +31,5 @@ export const useFirestoreQuerySnapshot = (props: IUseFirestoreProps) => {
         }
         load()
     }, [collectionName, JSON.stringify(condition)])
-    return { document }
+    return  documentQuerySnapShot 
 }

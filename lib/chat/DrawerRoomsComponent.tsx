@@ -1,14 +1,14 @@
 import { Drawer } from 'antd'
 import { useDispatch } from 'react-redux'
 import { toggleVisibleDrawerDiscuss } from '../redux/uiReducer'
-import ColSpecificComponent from './RoomsComponent'
 import RoomsComponent from './RoomsComponent'
 
 interface IDrawerColSpecificProps {
     visible: boolean
+    breakpoint: string
 }
 
-const DrawerColSpecificComponent = (props: IDrawerColSpecificProps) => {
+const DrawerRoomsComponent = (props: IDrawerColSpecificProps) => {
     const dispatch = useDispatch()
     return <Drawer
         placement='left'
@@ -19,11 +19,11 @@ const DrawerColSpecificComponent = (props: IDrawerColSpecificProps) => {
             dispatch(toggleVisibleDrawerDiscuss(false))
         }}
         maskClosable={false}
-        width={"100%"}
+        width={props.breakpoint === "S" ? "100%" : "450px"}
     >
         <RoomsComponent
         />
     </Drawer>
 }
 
-export default DrawerColSpecificComponent
+export default DrawerRoomsComponent

@@ -1,34 +1,29 @@
 import { db } from "@/firebase/config";
-import { DocumentData, QueryDocumentSnapshot, WhereFilterOp, collection, limit, onSnapshot, orderBy, query, where } from "firebase/firestore";
+import { DocumentData, OrderByDirection, Query, QueryDocumentSnapshot, WhereFilterOp, collection, limit, onSnapshot, orderBy, query, where } from "firebase/firestore";
 import { useEffect, useState } from "react";
 
 interface IUseFirestoreProps {
-    collectionName: string
-    condition: {
-        fieldName: string,
-        operator: WhereFilterOp,
-        compareValue: string
-    }
+    query: Query<DocumentData>
 }
 
 export const useFirestoreOnSnapshot = (props: IUseFirestoreProps) => {
-    const { collectionName, condition } = props
-    const [document, setDocument] = useState([] as DocumentData[])
+    const { query } = props
+    const [documentOnSnapShot, setDocumentOnSnapShot] = useState([] as DocumentData[])
 
     useEffect(() => {
-        if (!collectionName || !condition) {
+        if (!query) {
             return
         }
-        const q = query(collection(db, collectionName), orderBy("createAt"), limit(10), where(condition.fieldName, condition.operator, condition.compareValue));
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+
+        const unsubscribe = onSnapshot(query, (querySnapshot) => {
             const documents = querySnapshot.docs.map((doc: QueryDocumentSnapshot) => {
                 return doc.data()
             })
-            setDocument(documents)
+            setDocumentOnSnapShot(documents)
         });
         return () => {
             unsubscribe()
         }
-    }, [collectionName, JSON.stringify(condition)])
-    return { document }
+    }, [JSON.stringify(query)])
+    return documentOnSnapShot
 }

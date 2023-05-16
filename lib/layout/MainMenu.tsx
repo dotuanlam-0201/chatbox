@@ -1,3 +1,4 @@
+import { auth } from '@/firebase/config'
 import { Menu } from 'antd'
 import _ from "lodash"
 import { useRouter } from 'next/router'
@@ -7,9 +8,7 @@ import { BiLogOut } from 'react-icons/bi'
 import { GiDiscussion } from 'react-icons/gi'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../redux/store'
-import { toggleVisibleDrawerDiscuss, toggleVisibleMenuDiscuss } from '../redux/uiReducer'
-import { auth } from '@/firebase/config'
-import { useSessionStorage } from 'react-use'
+import { toggleVisibleDrawerDiscuss } from '../redux/uiReducer'
 
 interface IMainMenuProps {
 
@@ -17,7 +16,6 @@ interface IMainMenuProps {
 
 const MainMenu = (props: IMainMenuProps) => {
     const [selectedKeys, setSelectedKeys] = React.useState("")
-    const [sesstion, setSesstion] = useSessionStorage('user', '');
     const router = useRouter();
     const [itemsMenu, setItemsMenu] = useState(
         [
@@ -26,11 +24,11 @@ const MainMenu = (props: IMainMenuProps) => {
                 key: 'chat',
                 icon: <AiOutlineMessage />,
             },
-            {
-                label: "Setting",
-                key: 'setting',
-                icon: <AiOutlineSetting />,
-            },
+            // {
+            //     label: "Setting",
+            //     key: 'setting',
+            //     icon: <AiOutlineSetting />,
+            // },
             {
                 label: "Logout",
                 key: 'logout',
@@ -75,8 +73,10 @@ const MainMenu = (props: IMainMenuProps) => {
                         pathname: "/setting"
                     })
                 } else if (e.key === "logout") {
-                    setSesstion("")
-                    router.push("/login")                
+                    router.push("/login")
+                    auth.signOut()
+                    sessionStorage.removeItem("id")
+                    sessionStorage.removeItem("user")
                 } else if (e.key === "discuss") {
                     dispatch(toggleVisibleDrawerDiscuss(true))
                 }

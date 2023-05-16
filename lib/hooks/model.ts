@@ -4,3 +4,11 @@ export type TypeRooms = {
     roomName: string
     createBy: string
 }
+
+export type TypePayloadRoom = {
+    avatar: string
+    createAt?: number
+    createBy: string
+    members: string[]
+    name: string
+}

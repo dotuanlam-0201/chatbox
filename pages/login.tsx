@@ -10,7 +10,6 @@ import { FcGoogle } from "react-icons/fc";
 import { useCookie } from 'react-use';
 
 
-
 const LoginComponent = () => {
     const [loading, setLoading] = useState(false as boolean)
     const [form] = Form.useForm();
@@ -20,7 +19,6 @@ const LoginComponent = () => {
     const onSubmit = () => {
         form.validateFields()
             .then((values: any) => {
-                console.log(values);
             })
             .catch((err: any) => {
                 return
@@ -41,7 +39,7 @@ const LoginComponent = () => {
                     photoURL: photoURL,
                     id: uid,
                     email: email,
-                    createAt: Timestamp.fromDate(new Date()).toDate().getTime()
+                    createAt: Timestamp.now()
                 };
                 await setDoc(doc(db, "users", displayName || "user"), docData);
             }
@@ -64,12 +62,19 @@ const LoginComponent = () => {
     }
 
     return (
-        <div style={{ width: '100%', height: "100vh", display: 'grid', placeItems: 'center', padding: 10 }}>
-            <div style={{ maxWidth: 350, padding: 10, border: `1px solid red` }}>
+        <div style={{
+            width: "100%",
+            height: "100vh",
+            display: "grid",
+            placeItems: "center",
+            padding: 10
+        }}>
+            <div style={{ maxWidth: 300, padding: 10, border: "1px solid #e8e8e8" }}>
                 <Spin spinning={loading}>
                     <div>
                         <Typography.Title style={{ fontWeight: 900, color: CHATBOXCONSTANT.colors.primaryColorBlue }} level={2}>Welcome back</Typography.Title>
-                        <span>Continue width Google or enter your details.</span>
+                        <Typography.Text>Continue width Google or enter your details.</Typography.Text>
+                        <Divider />
                         <Card
                             onClick={onClickSSOgoole}
                             size='small'
@@ -112,23 +117,30 @@ const LoginComponent = () => {
                             </Col>
                             <Col xs={24}>
                                 <Button
+                                    style={{ width: "100%" }}
+                                    type='primary'
                                     onClick={onSubmit}>
                                     Login
                                 </Button>
                             </Col>
                             <Col>
-                                <span className='text-[#b5b5b5] text-[13px] font-normal'>
+                                <Typography.Text
+                                    style={{ fontSize: 13, fontWeight: 400, color: CHATBOXCONSTANT.colors.primaryColorGray }}
+                                >
                                     Don't have an account?
-                                    <span>
+                                </Typography.Text>
+                                <Divider type='vertical' style={{ margin: 5 }} />
+                                <Typography.Text style={{ fontWeight: 500 }}>
+                                    <a>
                                         Sign up here
-                                    </span>
-                                </span>
+                                    </a>
+                                </Typography.Text>
                             </Col>
                         </Row>
                     </Form>
                 </Spin>
             </div>
-        </div>
+        </div >
     )
 }
 

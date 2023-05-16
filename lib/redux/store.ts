@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit'
 import uiReducer from "./uiReducer/index"
+import userReducer from './userReducer'
 
 export const store = configureStore({
     reducer: {
         uiReducer: uiReducer,
+        userReducer: userReducer,
     },
 })
 

@@ -1,15 +1,15 @@
 import { db } from '@/firebase/config'
-import { Avatar, Badge, Card, Col, Row, Typography } from 'antd'
-import { DocumentData, QueryDocumentSnapshot, collection, onSnapshot, query } from 'firebase/firestore'
+import { Avatar, Card, Col, Dropdown, Menu, MenuProps, Modal, Popover, Row, Typography, notification } from 'antd'
+import { DocumentData, QueryDocumentSnapshot, collection, deleteDoc, deleteField, doc, onSnapshot, query, updateDoc } from 'firebase/firestore'
 import _ from "lodash"
 import moment from 'moment'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
-import { useSessionStorage } from 'react-use'
-import { CHATBOXCONSTANT } from '../CONTANT'
-import { useFirestoreQuerySnapshot } from '../hooks/useFirestoreQuerySnapshot'
+import { AiOutlineDelete, AiOutlineEdit, AiOutlineMore } from 'react-icons/ai'
 import { useDispatch } from 'react-redux'
+import { CHATBOXCONSTANT } from '../CONTANT'
 import { toggleVisibleDrawerDiscuss } from '../redux/uiReducer'
+import ModalAddEditRoom from './ModalAddEditRoom'
 interface IRoomComponentProps {
     room: DocumentData
 }
@@ -20,7 +20,7 @@ const RoomComponent = (props: IRoomComponentProps) => {
 
     const [lastMsgOnSnapShot, setLastMsgOnSnapShot] = useState([] as DocumentData[])
     const dispatch = useDispatch()
-
+    const [selectedRoom, setSelectedRoom] = useState(undefined as undefined | DocumentData)
 
     const dataLastMessage: {
         [roomId: string]: {
@@ -28,7 +28,6 @@ const RoomComponent = (props: IRoomComponentProps) => {
             sendAt?: number
         }
     } = _.head(lastMsgOnSnapShot)
-
 
     useEffect(() => {
         const q = query(
@@ -47,50 +46,64 @@ const RoomComponent = (props: IRoomComponentProps) => {
 
     const renderLastMessageTime = () => {
         const twentyFourHoursAgo = moment().subtract(24, "hour");
-        if (dataLastMessage && twentyFourHoursAgo.isAfter(moment(dataLastMessage[roomId].sendAt))) {
-            return moment(dataLastMessage[roomId].sendAt).format("ddd, DD-MM")
-        } else if (dataLastMessage && twentyFourHoursAgo.isBefore(moment(dataLastMessage[roomId].sendAt))) {
-            return moment(dataLastMessage[roomId].sendAt).format("HH:mm")
+        if (dataLastMessage && twentyFourHoursAgo.isAfter(moment(dataLastMessage[roomId]?.sendAt))) {
+            return moment(dataLastMessage[roomId]?.sendAt).format("ddd, DD-MM")
+        } else if (dataLastMessage && twentyFourHoursAgo.isBefore(moment(dataLastMessage[roomId]?.sendAt))) {
+            return moment(dataLastMessage[roomId]?.sendAt).format("HH:mm")
         }
     }
 
+
+
+
+    const onSelectRoom = () => {
+        router.push(`/chat?roomId=${roomId}`)
+        dispatch(toggleVisibleDrawerDiscuss(false))
+    }
+
     return (
-        <Card
-            bordered
-            onClick={() => {
-                router.push(`/chat?roomId=${roomId}`)
-                dispatch(toggleVisibleDrawerDiscuss(false))
-            }}
-            hoverable size='small'
-            style={{ border: "none", marginBottom: 3, backgroundColor: router.query.roomId === roomId ? "rgb(226 241 255)" : "#fff" }}
-            bodyStyle={{ borderBottom: "1px solid #e8e8e8" }}
-        >
-            <Row gutter={[10, 10]} justify={"start"} align={"middle"}>
+        <>
+            <Card
+                onClick={() => {
+                    onSelectRoom()
+                }}
+                bordered
+                hoverable size='small'
+                style={{ border: "none", marginBottom: 3, backgroundColor: router.query.roomId === roomId ? "rgb(226 241 255)" : "#fff" }}
+                bodyStyle={{ borderBottom: "1px solid #e8e8e8" }}
+            >
                 <Col>
-                    <Avatar style={{ border: "1px solid #e8e8e8" }} shape="circle" size={50} src={avatar || ""} />
+                    <Row gutter={[10, 10]} justify={"start"}>
+                        <Col>
+                            <Avatar style={{ border: "1px solid #e8e8e8" }} shape="circle" size={50} src={avatar || ""} />
+                        </Col>
+                        <Col style={{ width: "calc(100% - 120px)" }}>
+                            <Typography.Text style={{ fontWeight: 600 }}>
+                                {name}
+                            </Typography.Text>
+                            <div style={{
+                                whiteSpace: "nowrap",
+                                maxWidth: "100%",
+                                overflow: "hidden",
+                                color: CHATBOXCONSTANT.colors.primaryColorGray,
+                                textOverflow: "ellipsis"
+                            }}>
+                                {dataLastMessage && dataLastMessage[roomId]?.message }
+                            </div>
+                        </Col>
+                        <Col style={{ textAlign: "end", flexGrow: 1 }}>
+                            <div>
+                                <span style={{ color: CHATBOXCONSTANT.colors.primaryColorGray, fontSize: 12 }}>
+                                    {dataLastMessage ?
+                                        renderLastMessageTime()
+                                        : null}
+                                </span>
+                            </div>
+                        </Col>
+                    </Row>
                 </Col>
-                <Col style={{ width: "calc(100% - 100px)" }}>
-                    <Typography.Text style={{ fontWeight: 600 }}>
-                        {name}
-                    </Typography.Text>
-                    <div style={{ maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis" }}>
-                        {dataLastMessage && dataLastMessage[roomId].message}
-                    </div>
-                </Col>
-                <Col style={{ textAlign: "end" }}>
-                    <div>
-                        <span style={{ color: CHATBOXCONSTANT.colors.primaryColorGray, fontSize: 12 }}>
-                            {dataLastMessage ?
-                                renderLastMessageTime()
-                                : null}
-                        </span>
-                    </div>
-                    <div>
-                        <Badge count={2} />
-                    </div>
-                </Col>
-            </Row>
-        </Card>
+            </Card>
+        </>
     )
 }
 

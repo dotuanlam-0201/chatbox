@@ -27,13 +27,21 @@ const MessageComponent = (props: IMessageComponentProps) => {
         }
     }
 
+    const handleShowImage = () => {
+        if (parseMessage.message.match(/^http[^\?]*.(jpg|jpeg|png)(\?(.*))?$/gmi)) {
+            return <img style={{ maxWidth: "100%", objectFit: "scale-down" }} src={parseMessage.message} />
+        } else {
+            return <Typography.Text>{parseMessage.message}</Typography.Text>
+        }
+    }
+
     return (
         <>
             <Card
                 style={{
                     maxWidth: 450, marginBottom: 5,
                     backgroundColor: id === parseMessage.id ? "rgb(226, 241, 255)" : "white",
-                    marginInlineStart: id === parseMessage.id ? "inherit" : "auto"
+                    marginInlineStart: id !== parseMessage.id ? "inherit" : "auto"
                 }}
                 bodyStyle={{ minWidth: 300, overflow: "hidden" }}
                 bordered
@@ -55,7 +63,7 @@ const MessageComponent = (props: IMessageComponentProps) => {
                         </Row>
                     </Col>
                     <Col xs={24}>
-                        <Typography.Text>{parseMessage.message}</Typography.Text>
+                        {handleShowImage()}
                     </Col>
                 </Row>
             </Card>

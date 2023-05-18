@@ -14,7 +14,6 @@ export const useFirestoreOnSnapshot = (props: IUseFirestoreProps) => {
         if (!query) {
             return
         }
-
         const unsubscribe = onSnapshot(query, (querySnapshot) => {
             const documents = querySnapshot.docs.map((doc: QueryDocumentSnapshot) => {
                 return doc.data()
@@ -25,5 +24,5 @@ export const useFirestoreOnSnapshot = (props: IUseFirestoreProps) => {
             unsubscribe()
         }
     }, [JSON.stringify(query)])
-    return documentOnSnapShot
+    return documentOnSnapShot 
 }

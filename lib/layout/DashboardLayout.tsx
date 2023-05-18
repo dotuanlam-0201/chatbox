@@ -1,16 +1,15 @@
 import { Avatar, Layout, Typography } from 'antd';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { ReactNode, useEffect, useState } from 'react';
 import { AiFillMessage } from "react-icons/ai";
-import { createBreakpoint, useSessionStorage } from 'react-use';
-import MainMenu from './MainMenu';
-import DrawerRoomsComponent from '../chat/DrawerRoomsComponent';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../redux/store';
+import { createBreakpoint, useSessionStorage } from 'react-use';
 import { CHATBOXCONSTANT } from '../CONTANT';
-import styled from "styled-components"
+import DrawerRoomsComponent from '../chat/DrawerRoomsComponent';
+import { RootState } from '../redux/store';
 import { dispatchUser } from '../redux/userReducer';
-import { useRouter } from 'next/router';
+import MainMenu from './MainMenu';
 interface IDashboardLayoutProps {
     children?: ReactNode
 }
@@ -45,7 +44,6 @@ const DashboardLayout = (props: IDashboardLayoutProps) => {
             dispatch(dispatchUser(user))
         }
     }, [user])
-
 
     return (
         <Layout
@@ -105,3 +103,4 @@ const DashboardLayout = (props: IDashboardLayoutProps) => {
 }
 
 export default DashboardLayout
+

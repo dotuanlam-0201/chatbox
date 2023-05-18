@@ -1,35 +1,29 @@
-import { db } from "@/firebase/config"
-import { DocumentData, WhereFilterOp, collection, getDocs, query, where } from "firebase/firestore"
+import { DocumentData, Query, getDocs } from "firebase/firestore"
 import { useEffect, useState } from "react"
 
 interface IUseFirestoreProps {
-    collectionName: string
-    condition: {
-        fieldName: string,
-        operator: WhereFilterOp,
-        compareValue: string
-    }
+    query: Query<DocumentData>
 }
 
 export const useFirestoreQuerySnapshot = (props: IUseFirestoreProps) => {
-    const { collectionName, condition } = props
+    debugger
+    const { query } = props
     const [documentQuerySnapShot, setDocumentQuerySnapShot] = useState({} as DocumentData)
-
     const load = async () => {
-        const q = query(collection(db, collectionName), where(condition.fieldName, condition.operator, condition.compareValue));
-        const querySnapshot = await getDocs(q);
+        const querySnapshot = await getDocs(query);
         querySnapshot.forEach((doc) => {
-            if (doc.id) {
+            if (doc.exists()) {
                 setDocumentQuerySnapShot(doc.data())
             }
         });
     }
-
     useEffect(() => {
-        if (!collectionName || !condition) {
-            return
+        if (query) {
+            load()
         }
-        load()
-    }, [collectionName, JSON.stringify(condition)])
-    return  documentQuerySnapShot 
+        return () => {
+            load()
+        }
+    }, [JSON.stringify(query)])
+    return documentQuerySnapShot
 }

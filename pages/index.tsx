@@ -1,7 +1,7 @@
 import DashboardLayout from '@/lib/layout/DashboardLayout'
 import React from 'react'
 
-const index = () => {
+const Home = () => {
 
     return (
         <DashboardLayout>
@@ -10,4 +10,4 @@ const index = () => {
     )
 }
 
-export default index
+export default Home

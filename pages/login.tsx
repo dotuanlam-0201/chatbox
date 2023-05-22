@@ -64,7 +64,7 @@ const LoginComponent = () => {
     return (
         <div style={{
             width: "100%",
-            height: "100vh",
+            height: "calc(100vh - 20px)",
             display: "grid",
             placeItems: "center",
             padding: 10

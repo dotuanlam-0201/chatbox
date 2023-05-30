@@ -78,7 +78,7 @@ const ModalInviteUser = (props: IModalInviteUserProps) => {
             toEmail: email,
             fromName: displayName,
             message: "Join Boxchat to have interesting experiences together!",
-            url: "https://ant.design/components/icon"
+            url: "https://dev--peaceful-smakager-75f31d.netlify.app/login"
         };
         const reponse = await emailjs.send('service_lhppvpb', "template_invite_user", templateParams, "SnC1lB6gyDZXaifeT")
         if (reponse.status === 200) {

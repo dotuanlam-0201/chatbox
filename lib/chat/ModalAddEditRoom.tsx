@@ -111,7 +111,7 @@ const ModalAddEditRoom = (props: IModalAddEditRoomProps) => {
                         required: true,
                         message: "Required"
                     }]} label='Room name'>
-                    <Input placeholder="Name" />
+                    <Input maxLength={40} placeholder="Name" />
                 </Form.Item>
                 <Form.Item
                     name={"avatar"}

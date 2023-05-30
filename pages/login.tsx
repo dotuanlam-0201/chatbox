@@ -63,11 +63,11 @@ const LoginComponent = () => {
 
     return (
         <div style={{
-            width: "100%",
             height: "calc(100vh - 20px)",
             display: "grid",
             placeItems: "center",
-            padding: 10
+            padding: 10,
+            overflow: "hidden"  
         }}>
             <div style={{ maxWidth: 300, padding: 10, border: "1px solid #e8e8e8" }}>
                 <Spin spinning={loading}>
@@ -84,7 +84,7 @@ const LoginComponent = () => {
                                 textAlign: "center"
                             }}
                         >
-                            <span>
+                            <span style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 5 }}>
                                 <FcGoogle />
                                 <span>
                                     Log in with Google

@@ -8,25 +8,26 @@ import { useFirestoreOnSnapshot } from '@/lib/hooks/useFirestoreOnSnapshot'
 import DashboardLayout from '@/lib/layout/DashboardLayout'
 import { RootState } from '@/lib/redux/store'
 import { toggleVisibleMenuDiscuss } from '@/lib/redux/uiReducer'
-import { Avatar, Col, Divider, Dropdown, Form, Input, MenuProps, Modal, Popover, Row, Typography, Upload, message, notification } from 'antd'
+import { Avatar, Col, Dropdown, Form, Input, MenuProps, Modal, Popover, Row, Tooltip, Typography, Upload, message, notification } from 'antd'
+import { RcFile } from 'antd/es/upload'
 import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react'
 import { DocumentData, Query, Timestamp, arrayRemove, arrayUnion, collection, deleteDoc, deleteField, doc, getDoc, limit, orderBy, query, updateDoc, where } from 'firebase/firestore'
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import _ from "lodash"
 import moment from 'moment'
 import { useRouter } from 'next/router'
 import { useEffect, useRef, useState } from 'react'
 import { AiOutlineDelete, AiOutlineEdit, AiOutlineMore, AiOutlineSend, AiOutlineUserAdd } from 'react-icons/ai'
+import { BsEmojiSunglasses, BsFillFileEarmarkImageFill } from "react-icons/bs"
+import { TiArrowBack } from "react-icons/ti"
 import { useDispatch, useSelector } from 'react-redux'
 import { Scrollbar } from 'react-scrollbars-custom'
 import { createBreakpoint, useLocalStorage } from "react-use"
-import { BsEmojiSunglasses, BsFillFileEarmarkImageFill } from "react-icons/bs"
-import { TiArrowBack } from "react-icons/ti"
-import { RcFile } from 'antd/es/upload'
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 
 const useBreakpoint = createBreakpoint();
 
 const ChatBoxComponent = () => {
+
     const dispatch = useDispatch()
     const breakpoint = useBreakpoint();
     const [visibleSpecificCol, setVisibleSpecificCol] = useState(false as boolean)
@@ -37,9 +38,6 @@ const ChatBoxComponent = () => {
     const [visibleModalAddRoom, setVisibleModalAddRoom] = useState(false)
     const [visibleModalInvite, setVisibleModalInvite] = useState(false as boolean)
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-    }
     const roomId = router.query.roomId
 
     const messageDataOnSnapShot = useFirestoreOnSnapshot({
@@ -49,8 +47,20 @@ const ChatBoxComponent = () => {
             limit(50)) as Query<DocumentData>
     })
 
+    const handleScrollToBottom = () => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+    }
+
     useEffect(() => {
-        scrollToBottom()
+        handleScrollToBottom()
+        const timoutScrollBot = setTimeout(() => {
+            handleScrollToBottom()
+        }, 500);
+        return () => {
+            window.clearTimeout(timoutScrollBot)
+        }
     }, [JSON.stringify(messageDataOnSnapShot)]);
 
     useEffect(() => {
@@ -254,6 +264,7 @@ const ChatBoxComponent = () => {
     }
 
 
+
     return (
         <DashboardLayout
         >
@@ -304,11 +315,13 @@ const ChatBoxComponent = () => {
                                                 src={avatar}
                                             />
                                         </Col>
-                                        <Col style={{ flexGrow: 1 }}>
-                                            <Typography.Title
-                                                style={{ margin: 0, color: "white", }} level={3}>
-                                                {name}
-                                            </Typography.Title>
+                                        <Col flex={1} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                            <Tooltip title={name}>
+                                                <Typography.Title
+                                                    style={{ margin: 0, color: "white", }} level={3}>
+                                                    {name}
+                                                </Typography.Title>
+                                            </Tooltip>
                                         </Col>
                                         <Col style={{ alignSelf: "center" }}>
                                             <Avatar.Group maxCount={5}>
@@ -321,7 +334,6 @@ const ChatBoxComponent = () => {
                                     </Row>
                                 </div>
                             }
-
 
                             {roomId ?
                                 <div style={{ height: "100%", paddingTop: 60 }}>
@@ -336,7 +348,7 @@ const ChatBoxComponent = () => {
                                                 }}>
                                                     {moment(Number(key)).format("dddd, MMMM Do YYYY")}
                                                 </div>
-                                                {messages.map((message: string) => {
+                                                {messages.map((message: string, index: number) => {
                                                     return <MessageComponent
                                                         message={message}
                                                     />
@@ -344,13 +356,15 @@ const ChatBoxComponent = () => {
                                             </>
                                         })
                                     }
+                                    <div ref={messagesEndRef}></div>
                                 </div>
+
+
                                 :
                                 <div style={{ height: "100%", textAlign: "center", marginTop: "30%" }}>
                                     Select a room to start
                                 </div>
                             }
-                            <div ref={messagesEndRef} />
                         </Scrollbar>
                     </div>
 
@@ -428,12 +442,3 @@ const ChatBoxComponent = () => {
 }
 
 export default ChatBoxComponent
-
-export const getServerSideProps = async () => {
-    const [user, setUser] = useLocalStorage("user", "")
-    if (!user) {
-        return {
-            redirect: { destination: '/login', permanent: false },
-        }
-    }
-}

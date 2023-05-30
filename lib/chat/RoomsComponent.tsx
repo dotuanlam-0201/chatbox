@@ -55,7 +55,6 @@ const RoomsComponent = (props: IRoomsComponentProps) => {
                             room={room}
                         />
                     })
-
                 }
             </Scrollbar>
 

@@ -18,7 +18,7 @@ import { useEffect, useRef, useState } from 'react'
 import { AiOutlineDelete, AiOutlineEdit, AiOutlineMore, AiOutlineSend, AiOutlineUserAdd } from 'react-icons/ai'
 import { useDispatch, useSelector } from 'react-redux'
 import { Scrollbar } from 'react-scrollbars-custom'
-import { createBreakpoint } from "react-use"
+import { createBreakpoint, useLocalStorage } from "react-use"
 import { BsEmojiSunglasses, BsFillFileEarmarkImageFill } from "react-icons/bs"
 import { TiArrowBack } from "react-icons/ti"
 import { RcFile } from 'antd/es/upload'
@@ -428,3 +428,12 @@ const ChatBoxComponent = () => {
 }
 
 export default ChatBoxComponent
+
+export const getServerSideProps = async () => {
+    const [user, setUser] = useLocalStorage("user", "")
+    if (!user) {
+        return {
+            redirect: { destination: '/login', permanent: false },
+        }
+    }
+}

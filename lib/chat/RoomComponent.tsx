@@ -73,14 +73,25 @@ const RoomComponent = (props: IRoomComponentProps) => {
                 bodyStyle={{ borderBottom: "1px solid #e8e8e8" }}
             >
                 <Col>
-                    <Row gutter={[10, 10]} justify={"start"}>
+                    <Row wrap={false} gutter={[10, 10]} justify={"start"}>
                         <Col>
                             <Avatar style={{ border: "1px solid #e8e8e8" }} shape="circle" size={50} src={avatar || ""} />
                         </Col>
-                        <Col style={{ width: "calc(100% - 120px)" }}>
-                            <Typography.Text style={{ fontWeight: 600 }}>
-                                {name}
-                            </Typography.Text>
+                        <Col flex={1}>
+                            <Row gutter={[5, 5]} wrap={false} justify={"space-between"}>
+                                <Col>
+                                    <Typography.Text style={{ fontWeight: 600 }}>
+                                        {name}
+                                    </Typography.Text>
+                                </Col>
+                                <Col>
+                                    <span style={{ color: CHATBOXCONSTANT.colors.primaryColorGray, fontSize: 12 }}>
+                                        {dataLastMessage ?
+                                            renderLastMessageTime()
+                                            : null}
+                                    </span>
+                                </Col>
+                            </Row>
                             <div style={{
                                 whiteSpace: "nowrap",
                                 maxWidth: "100%",
@@ -88,16 +99,7 @@ const RoomComponent = (props: IRoomComponentProps) => {
                                 color: CHATBOXCONSTANT.colors.primaryColorGray,
                                 textOverflow: "ellipsis"
                             }}>
-                                {dataLastMessage && dataLastMessage[roomId]?.message }
-                            </div>
-                        </Col>
-                        <Col style={{ textAlign: "end", flexGrow: 1 }}>
-                            <div>
-                                <span style={{ color: CHATBOXCONSTANT.colors.primaryColorGray, fontSize: 12 }}>
-                                    {dataLastMessage ?
-                                        renderLastMessageTime()
-                                        : null}
-                                </span>
+                                {dataLastMessage && dataLastMessage[roomId]?.message}
                             </div>
                         </Col>
                     </Row>

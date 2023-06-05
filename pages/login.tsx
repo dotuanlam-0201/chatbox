@@ -56,8 +56,37 @@ const LoginComponent = () => {
     const onClickSSOFacebook = async () => {
         const provider = new FacebookAuthProvider();
         const response = await signInWithPopup(auth, provider)
-        console.log("🚀 ~ file: login.tsx:59 ~ onClickSSOFacebook ~ response:", response)
         const { user } = response
+        if (user) {
+            setLoading(true)
+            const details = getAdditionalUserInfo(response)
+            const { displayName, email, photoURL, uid } = user
+            if (details?.isNewUser) {
+                const docData = {
+                    displayName: displayName,
+                    photoURL: photoURL,
+                    id: uid,
+                    email: email,
+                    createAt: Timestamp.now()
+                };
+                await setDoc(doc(db, "users", displayName || "user"), docData);
+            }
+            updateCookie(_.get(user, 'accessToken', null))
+            const userInfo = {
+                displayName: displayName,
+                photoURL: photoURL,
+                id: uid,
+                email: email
+            }
+            sessionStorage.setItem("user", JSON.stringify(userInfo))
+            sessionStorage.setItem("id", JSON.stringify(uid))
+            router.push("/chat")
+        } else {
+            notification.error({
+                message: 'Error',
+                description: 'Something went wrong!'
+            })
+        }
     }
 
     return (
